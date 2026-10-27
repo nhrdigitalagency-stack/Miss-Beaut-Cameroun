@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, CheckCircle2, AlertCircle, ShieldCheck, Lock, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
+import { submitVoteRequest } from '../services/dataService';
 
 export const VoteModal: React.FC = () => {
   const {
@@ -64,26 +65,14 @@ export const VoteModal: React.FC = () => {
     setSubmitting(true);
     setResultState({ status: 'idle', message: '' });
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-
     try {
-      const res = await fetch('/api/votes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          candidateId: activeVoteCandidate.id,
-          voteType: 'free_verified',
-          idempotencyKey,
-        }),
-        signal: controller.signal,
+      const res = await submitVoteRequest(authToken, user, {
+        candidateId: activeVoteCandidate.id,
+        voteType: 'free_verified',
+        idempotencyKey,
       });
-      clearTimeout(timeoutId);
 
-      const data = await res.json();
+      const data = res.data;
 
       if (res.ok && data.code === 'VOTE_RECORDED') {
         setResultState({
@@ -115,32 +104,7 @@ export const VoteModal: React.FC = () => {
           message: data.error || 'Une erreur temporaire est survenue côté serveur.',
         });
       }
-    } catch (err: any) {
-      clearTimeout(timeoutId);
-      // On timeout or network drop, NEVER encourage a blind second vote: check idempotency key first!
-      setCheckingTimeout(true);
-      try {
-        const checkRes = await fetch(`/api/votes/status/${encodeURIComponent(idempotencyKey)}`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        if (checkRes.ok) {
-          const checkData = await checkRes.json();
-          if (checkData.found) {
-            setResultState({
-              status: 'recorded',
-              message: `Vote confirmé après vérification d'idempotence pour ${checkData.vote.candidateName}.`,
-              voteId: checkData.vote.id,
-              recordedAt: checkData.vote.createdAt,
-            });
-            notifyVoteRecorded();
-            setCheckingTimeout(false);
-            setSubmitting(false);
-            return;
-          }
-        }
-      } catch {
-        // Fallback if network is still unreachable
-      }
+    } catch {
       setCheckingTimeout(false);
       setResultState({
         status: 'error',
@@ -160,23 +124,15 @@ export const VoteModal: React.FC = () => {
     }
     setSubmitting(true);
     try {
-      const res = await fetch('/api/votes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          candidateId: activeVoteCandidate.id,
-          voteType: 'paid_pack',
-          quantity: paidQuantity,
-          idempotencyKey: `${idempotencyKey}_paid`,
-        }),
+      const res = await submitVoteRequest(authToken, user, {
+        candidateId: activeVoteCandidate.id,
+        voteType: 'paid_pack',
+        quantity: paidQuantity,
+        idempotencyKey: `${idempotencyKey}_paid`,
       });
-      const data = await res.json();
       setResultState({
         status: 'paid_disabled',
-        message: data.error,
+        message: res.data.error,
       });
     } catch {
       setResultState({

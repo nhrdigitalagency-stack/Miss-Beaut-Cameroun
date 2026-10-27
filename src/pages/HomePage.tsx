@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar, ShieldCheck, CheckCircle2, HelpCircle, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { Candidate, NewsArticle } from '../data/initialData';
+import { Candidate, NewsArticle, INITIAL_CANDIDATES, INITIAL_NEWS } from '../data/initialData';
 import { CandidateCard } from '../components/CandidateCard';
+import { fetchCandidatesCatalog, fetchNewsList } from '../services/dataService';
 
 const HERO_RUNWAY_VIDEO_URL =
   '/assets/aistudio/Model_walking_runway_and_logo_1080p_20261027101154_c968f22d.mp4';
@@ -19,9 +20,9 @@ interface CountdownParts {
 
 export const HomePage: React.FC = () => {
   const { t, locale, config, votingState, voteSuccessTrigger } = useApp();
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [candidates, setCandidates] = useState<Candidate[]>(INITIAL_CANDIDATES);
   const [showPublicVotes, setShowPublicVotes] = useState<boolean>(true);
-  const [news, setNews] = useState<NewsArticle[]>([]);
+  const [news, setNews] = useState<NewsArticle[]>(INITIAL_NEWS.slice(0, 3));
   const [countdown, setCountdown] = useState<CountdownParts>({
     days: '35',
     hours: '21',
@@ -31,18 +32,22 @@ export const HomePage: React.FC = () => {
   });
 
   useEffect(() => {
-    fetch('/api/candidates?pageSize=6')
-      .then((r) => r.json())
+    fetchCandidatesCatalog({ pageSize: 6 })
       .then((data) => {
-        if (data.candidates) setCandidates(data.candidates);
-        if (typeof data.showPublicVotes === 'boolean') setShowPublicVotes(data.showPublicVotes);
+        if (data?.candidates && data.candidates.length > 0) {
+          setCandidates(data.candidates);
+        }
+        if (typeof data?.showPublicVotes === 'boolean') {
+          setShowPublicVotes(data.showPublicVotes);
+        }
       })
       .catch(console.error);
 
-    fetch('/api/news')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.articles) setNews(data.articles.slice(0, 3));
+    fetchNewsList()
+      .then((articles) => {
+        if (articles && articles.length > 0) {
+          setNews(articles.slice(0, 3));
+        }
       })
       .catch(console.error);
   }, [voteSuccessTrigger]);

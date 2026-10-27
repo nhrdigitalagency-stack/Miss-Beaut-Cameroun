@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { RefreshCw, EyeOff, Info, ShieldAlert } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
+import { INITIAL_CANDIDATES } from '../data/initialData';
+import { fetchLeaderboardData } from '../services/dataService';
 
 interface LeaderboardEntry {
   id: string;
@@ -23,20 +25,37 @@ interface LeaderboardEntry {
 export const LeaderboardPage: React.FC = () => {
   const { t, locale, config, voteSuccessTrigger } = useApp();
   const [enabled, setEnabled] = useState<boolean>(true);
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [hasTies, setHasTies] = useState<boolean>(false);
+  const [entries, setEntries] = useState<LeaderboardEntry[]>(() =>
+    INITIAL_CANDIDATES.map((c) => ({
+      id: c.id,
+      slug: c.slug,
+      number: c.number,
+      name: c.name,
+      region: c.region,
+      city: c.city,
+      roleFr: c.roleFr,
+      roleEn: c.roleEn,
+      photoUrl: c.photoUrl,
+      focalPoint: c.focalPoint,
+      votes: c.publicVotesCount || 0,
+      rank: 1,
+      isTied: true,
+    }))
+  );
+  const [hasTies, setHasTies] = useState<boolean>(true);
   const [isOfficial, setIsOfficial] = useState<boolean>(false);
-  const [serverTimeIso, setServerTimeIso] = useState<string>('');
+  const [serverTimeIso, setServerTimeIso] = useState<string>(new Date().toISOString());
   const [totalValidVotes, setTotalValidVotes] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/leaderboard');
-      const data = await res.json();
+      const data = await fetchLeaderboardData();
       setEnabled(Boolean(data.enabled));
-      setEntries(data.entries || []);
+      if (Array.isArray(data.entries) && data.entries.length > 0) {
+        setEntries(data.entries);
+      }
       setHasTies(Boolean(data.hasTies));
       setIsOfficial(Boolean(data.isOfficial));
       setServerTimeIso(data.serverTimeIso || new Date().toISOString());

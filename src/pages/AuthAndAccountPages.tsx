@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, ShieldCheck, KeyRound, UserCheck, LogOut, History } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import {
+  performLoginOrRegister,
+  fetchCurrentUserSession,
+  verifyUserEmailCode,
+} from '../services/dataService';
 
 export const AuthPage: React.FC = () => {
   const { t, user, setAuthSession, refreshConfigAndUser } = useApp();
@@ -19,13 +24,8 @@ export const AuthPage: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, fullName, password }),
-      });
-      const data = await res.json();
+      const res = await performLoginOrRegister(mode, { email, fullName, password });
+      const data = res.data;
       if (!res.ok) {
         setError(data.error || 'Erreur lors de la connexion.');
       } else {
@@ -44,12 +44,8 @@ export const AuthPage: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: demoEmail, password: demoPass }),
-      });
-      const data = await res.json();
+      const res = await performLoginOrRegister('login', { email: demoEmail, password: demoPass });
+      const data = res.data;
       if (res.ok) {
         setAuthSession(data.token, data.user);
         await refreshConfigAndUser();
@@ -255,14 +251,13 @@ export const AccountPage: React.FC = () => {
       navigate('/connexion');
       return;
     }
-    fetch('/api/auth/me', {
-      headers: { Authorization: `Bearer ${authToken}` },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Unauthorized');
-        return res.json();
-      })
+    fetchCurrentUserSession(authToken)
       .then((data) => {
+        if (!data?.user) {
+          setAuthSession(null, null);
+          navigate('/connexion');
+          return;
+        }
         setVotesHistory(data.votesHistory || []);
         if (data.user?.verificationCode && !data.user.emailVerified) {
           setCode(data.user.verificationCode);
@@ -277,18 +272,12 @@ export const AccountPage: React.FC = () => {
 
   const handleVerifyEmail = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!authToken) return;
     setVerifyErr('');
     setVerifyMsg('');
     try {
-      const res = await fetch('/api/auth/verify-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ code }),
-      });
-      const data = await res.json();
+      const res = await verifyUserEmailCode(authToken, code);
+      const data = res.data;
       if (!res.ok) {
         setVerifyErr(data.error || 'Code invalide');
       } else {

@@ -4,37 +4,38 @@ import { ArrowLeft, Share2, Check, ShieldCheck, QrCode, HeartHandshake } from 'l
 import { QRCodeSVG } from 'qrcode.react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { Candidate } from '../data/initialData';
+import { Candidate, INITIAL_CANDIDATES } from '../data/initialData';
+import { fetchSingleCandidate } from '../services/dataService';
 
 export const CandidateProfilePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { t, locale, config, votingState, openVoteModal, voteSuccessTrigger } = useApp();
 
-  const [candidate, setCandidate] = useState<Candidate | null>(null);
+  const [candidate, setCandidate] = useState<Candidate | null>(() =>
+    INITIAL_CANDIDATES.find((c) => c.slug === slug || c.id === slug) || null
+  );
   const [showPublicVotes, setShowPublicVotes] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
-    setLoading(true);
-    fetch(`/api/candidates/${encodeURIComponent(slug)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Not found');
-        return res.json();
-      })
+    const initialMatch = INITIAL_CANDIDATES.find((c) => c.slug === slug || c.id === slug) || null;
+    if (initialMatch) setCandidate(initialMatch);
+    fetchSingleCandidate(slug)
       .then((data) => {
-        setCandidate(data.candidate);
-        setShowPublicVotes(Boolean(data.showPublicVotes));
+        if (data?.candidate) {
+          setCandidate(data.candidate);
+          setShowPublicVotes(Boolean(data.showPublicVotes));
+        }
         setLoading(false);
       })
       .catch(() => {
-        setCandidate(null);
         setLoading(false);
       });
   }, [slug, voteSuccessTrigger]);
 
-  if (loading) {
+  if (loading && !candidate) {
     return (
       <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-12">
         <div className="h-[520px] rounded-3xl bg-white border border-[#EEDDE6] animate-pulse" />

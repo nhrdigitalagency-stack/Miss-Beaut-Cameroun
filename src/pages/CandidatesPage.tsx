@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, X, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { Candidate } from '../data/initialData';
+import { Candidate, INITIAL_CANDIDATES } from '../data/initialData';
 import { CandidateCard } from '../components/CandidateCard';
+import { fetchCandidatesCatalog } from '../services/dataService';
 
 export const CandidatesPage: React.FC = () => {
   const { t, config, voteSuccessTrigger } = useApp();
@@ -16,12 +17,14 @@ export const CandidatesPage: React.FC = () => {
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'number');
   const [page, setPage] = useState(Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1));
 
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [regions, setRegions] = useState<string[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [candidates, setCandidates] = useState<Candidate[]>(INITIAL_CANDIDATES);
+  const [regions, setRegions] = useState<string[]>(
+    Array.from(new Set(INITIAL_CANDIDATES.map((c) => c.region))).sort()
+  );
+  const [totalCount, setTotalCount] = useState(INITIAL_CANDIDATES.length);
   const [totalPages, setTotalPages] = useState(1);
   const [showPublicVotes, setShowPublicVotes] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Sync rawSearch when URL param changes externally (e.g. from BubbleHeader quick search)
   useEffect(() => {
@@ -49,37 +52,36 @@ export const CandidatesPage: React.FC = () => {
     setSearchParams(nextParams, { replace: true });
   }, [debouncedSearch, selectedRegion, sortBy, page, setSearchParams]);
 
-  // Fetch candidates with AbortController to cancel obsolete requests
+  // Fetch candidates via dual-mode dataService (Express API + Sanity CDN + Local fallback)
   useEffect(() => {
-    const controller = new AbortController();
+    let active = true;
     setLoading(true);
 
-    const params = new URLSearchParams({
+    fetchCandidatesCatalog({
       q: debouncedSearch,
       region: selectedRegion,
       sort: sortBy,
-      page: String(page),
-      pageSize: '6',
-    });
-
-    fetch(`/api/candidates?${params.toString()}`, { signal: controller.signal })
-      .then((res) => res.json())
+      page,
+      pageSize: 6,
+    })
       .then((data) => {
+        if (!active) return;
         setCandidates(data.candidates || []);
-        setTotalCount(data.totalCount || 0);
+        setTotalCount(data.totalCount ?? 0);
         setTotalPages(data.totalPages || 1);
         setRegions(data.regions || []);
         setShowPublicVotes(Boolean(data.showPublicVotes));
         setLoading(false);
       })
       .catch((err) => {
-        if (err.name !== 'AbortError') {
-          console.error(err);
-          setLoading(false);
-        }
+        if (!active) return;
+        console.error(err);
+        setLoading(false);
       });
 
-    return () => controller.abort();
+    return () => {
+      active = false;
+    };
   }, [debouncedSearch, selectedRegion, sortBy, page, voteSuccessTrigger]);
 
   const handleResetFilters = () => {

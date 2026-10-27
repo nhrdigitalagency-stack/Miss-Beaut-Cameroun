@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { CentralConfig, DEFAULT_CENTRAL_CONFIG } from '../config/centralConfig';
 import { UserSession, Candidate } from '../data/initialData';
+import { fetchCurrentUserSession } from '../services/dataService';
 import frDict from '../i18n/fr.json';
 import enDict from '../i18n/en.json';
 
@@ -77,28 +78,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const refreshConfigAndUser = useCallback(async () => {
     try {
       const cfgRes = await fetch('/api/config');
-      if (cfgRes.ok) {
+      const contentType = cfgRes.headers.get('content-type') || '';
+      if (cfgRes.ok && contentType.includes('application/json')) {
         const data = await cfgRes.json();
-        setConfig(data.config);
-        setVotingState(data.votingState);
-        setServerTimeIso(data.serverTimeIso);
+        if (data.config) setConfig(data.config);
+        if (data.votingState) setVotingState(data.votingState);
+        if (data.serverTimeIso) setServerTimeIso(data.serverTimeIso);
       }
 
       if (authToken) {
-        const meRes = await fetch('/api/auth/me', {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        if (meRes.ok) {
-          const meData = await meRes.json();
+        const meData = await fetchCurrentUserSession(authToken);
+        if (meData?.user) {
           setUser(meData.user);
-        } else if (meRes.status === 401) {
-          setAuthSession(null, null);
         }
       }
-    } catch (err) {
-      console.error('Failed to sync config/session:', err);
+    } catch {
+      // Static host fallback uses DEFAULT_CENTRAL_CONFIG
     }
-  }, [authToken, setAuthSession]);
+  }, [authToken]);
 
   useEffect(() => {
     refreshConfigAndUser();

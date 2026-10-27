@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EditionStatus } from '../config/centralConfig';
+import { fetchAdminOverviewData } from '../services/dataService';
 
 export const AdminPage: React.FC = () => {
   const { user, authToken, refreshConfigAndUser } = useApp();
@@ -58,20 +59,16 @@ export const AdminPage: React.FC = () => {
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/api/admin/overview', {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      if (!res.ok) {
-        const d = await res.json();
-        setErrorMsg(d.error || 'Accès non autorisé.');
-        setOverview(null);
-      } else {
-        const data = await res.json();
+      const data = await fetchAdminOverviewData(authToken);
+      if (data) {
         setOverview(data);
         setEditionStatus(data.config.editionStatus);
         setLeaderboardEnabled(data.config.publicLeaderboardEnabled);
         setLeaderboardMode(data.config.leaderboardMode);
         setCandNumber((data.candidates?.length || 6) + 1);
+      } else {
+        setErrorMsg('Accès non autorisé.');
+        setOverview(null);
       }
     } catch {
       setErrorMsg('Erreur de connexion au serveur.');
