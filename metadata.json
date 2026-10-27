@@ -1,0 +1,6 @@
+{
+  "name": "Miss Beauté Cameroun — 20ᵉ Édition",
+  "description": "Plateforme officielle de présentation et de vote pour le concours Miss Beauté Cameroun (20ᵉ Édition). Découvrez les candidates, leurs projets sociaux et votez en toute transparence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
