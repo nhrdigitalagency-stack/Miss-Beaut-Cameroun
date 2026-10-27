@@ -56,7 +56,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, showPub
             <span aria-hidden="true">·</span>
             <span>{candidate.city}</span>
             <span aria-hidden="true">·</span>
-            <span className="tabular-nums">{candidate.age} ans (fictif)</span>
+            <span className="tabular-nums">{candidate.age} {t.candidates.fictionalAgeNote}</span>
           </div>
 
           <p className="text-sm text-[#21131D] italic leading-relaxed line-clamp-2">

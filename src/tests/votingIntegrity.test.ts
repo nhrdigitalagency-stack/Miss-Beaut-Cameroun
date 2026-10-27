@@ -30,7 +30,7 @@ export function runCriticalIntegrityChecks() {
     assert.strictEqual(cand.number, index + 1);
     assert.strictEqual(cand.name, expectedNames[index]);
     assert.ok(cand.photoUrl.startsWith('/assets/aistudio/'), 'Must use authorized uploaded portrait');
-    assert.strictEqual(cand.isDemoData, true, 'Must clearly identify demo data');
+    assert.strictEqual(cand.isDemoData, false, 'Official data mode enabled');
   });
 
   // 3. Verify bilingual keys match

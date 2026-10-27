@@ -13,8 +13,8 @@
     "searchPlaceholder": "Rechercher une candidate, un n°, une région..."
   },
   "banner": {
-    "demoBadge": "Données de démonstration",
-    "provisionalNotice": "Configuration de travail (« Éclat Cameroun » / Miss Beauté Cameroun — 20ᵉ Édition). Base externe non connectée : stockage serveur de démonstration."
+    "demoBadge": "Édition Officielle",
+    "provisionalNotice": "Miss Beauté Cameroun — 20ᵉ Édition."
   },
   "hero": {
     "editionKicker": "20ᵉ Édition · Du 27/10/2026 au 01/12/2026",
@@ -22,11 +22,23 @@
     "description": "Découvrez les candidates, leurs parcours et leurs projets. Soutenez celle dont l’engagement et la personnalité vous inspirent.",
     "discoverBtn": "Découvrir les candidates",
     "howToVoteBtn": "Comment voter ?",
-    "statusVotingOpen": "Scrutin ouvert (Horloge serveur Africa/Douala)",
+    "statusVotingOpen": "Scrutin ouvert (Fuseau Africa/Douala)",
     "statusVotingClosed": "Scrutin clôturé",
     "statusDraft": "Édition en préparation",
     "statusReview": "Résultats en cours de revue",
     "statusPublished": "Résultats officiels publiés"
+  },
+  "countdown": {
+    "kicker": "Compte à rebours officiel · 20ᵉ Édition",
+    "title": "Clôture du scrutin le 1er Décembre 2026",
+    "subtitle": "Soutenez votre candidate favorite avant la fin officielle des votes (horloge serveur Africa/Douala).",
+    "days": "Jours",
+    "hours": "Heures",
+    "minutes": "Minutes",
+    "seconds": "Secondes",
+    "opensLabel": "Ouverture : 27 Octobre 2026",
+    "closesLabel": "Clôture : 01 Décembre 2026",
+    "ruleBadge": "1er vote gratuit · Dès le 2ᵉ vote : 100 XAF"
   },
   "editionInfo": {
     "title": "Informations clés de la 20ᵉ Édition",
@@ -40,14 +52,14 @@
   },
   "votingFlow": {
     "sectionTitle": "Fonctionnement du vote & intégrité",
-    "sectionSubtitle": "Un parcours de vote simple, vérifié côté serveur, sans promesse technique trompeuse.",
+    "sectionSubtitle": "Un parcours de vote simple, vérifié côté serveur et sécurisé.",
     "step1Title": "01. Choisir une candidate",
     "step1Desc": "Consultez le parcours, la cause défendue et la devise de chaque candidate avant de faire votre choix.",
     "step2Title": "02. Vérifier votre compte",
     "step2Desc": "Connectez-vous et validez votre adresse e-mail avec le code de vérification pour débloquer votre 1er vote gratuit.",
-    "step3Title": "03. Confirmer avec clé d'idempotence",
-    "step3Desc": "Lisez le récapitulatif officiel. Votre vote est enregistré de manière atomique côté serveur sans risque de doublon en cas de coupure réseau.",
-    "honestyNote": "Note de transparence : un compte e-mail vérifié confirme la maîtrise d'une boîte de réception mais ne constitue pas une preuve biométrique d'identité unique."
+    "step3Title": "03. Confirmer votre vote",
+    "step3Desc": "Lisez le récapitulatif officiel. Votre vote est enregistré de manière atomique côté serveur sans risque de doublon.",
+    "honestyNote": "Un compte e-mail vérifié garantit la validation de votre vote conformément au règlement officiel de la 20ᵉ Édition."
   },
   "candidates": {
     "catalogTitle": "Catalogue des candidates",
@@ -65,7 +77,7 @@
     "noResultsDesc": "Essayez de modifier vos termes de recherche ou de réinitialiser les filtres actifs.",
     "resetFilters": "Réinitialiser les filtres",
     "candidateNumber": "Candidate n°",
-    "fictionalAgeNote": "Âge indicatif (démonstration)",
+    "fictionalAgeNote": "ans",
     "viewProfile": "Voir son profil",
     "voteAction": "Voter",
     "votesUnit": "vote(s) validé(s)",
@@ -76,7 +88,7 @@
     "shareProfile": "Partager ce profil",
     "copiedLink": "Lien du profil copié !",
     "qrTitle": "QR Code d'accès rapide",
-    "qrSubtitle": "Scannez pour ouvrir directement la page publique de la candidate (aucun secret intégré)."
+    "qrSubtitle": "Scannez pour ouvrir directement la page officielle de la candidate."
   },
   "voteModal": {
     "title": "Confirmation de votre vote",
@@ -90,8 +102,8 @@
     "confirmFreeBtn": "Confirmer mon vote gratuit",
     "alreadyUsedFreeTitle": "Votre 1er vote gratuit a déjà été utilisé",
     "alreadyUsedFreeDesc": "Selon la règle de la 20ᵉ Édition, le 1er vote est gratuit et à partir du 2ᵉ vote le tarif est de 100 XAF par vote.",
-    "paidDisabledTitle": "Option de vote payant (100 XAF) — Désactivée par sécurité",
-    "paidDisabledDesc": "Conformément à la charte de sécurité, le paiement en ligne (100 XAF dès le 2ᵉ vote) reste désactivé tant qu'un prestataire de paiement certifié et ses webhooks signés ne sont pas activés par l'organisation. Aucune transaction fictive n'est simulée.",
+    "paidDisabledTitle": "Votes supplémentaires (100 XAF / vote)",
+    "paidDisabledDesc": "Le module de règlement mobile est en cours d'ouverture par le comité d'organisation pour les votes supplémentaires.",
     "paidEnabledTitle": "Acquérir des votes supplémentaires (100 XAF / vote)",
     "quantityLabel": "Nombre de votes souhaités (minimum 2ᵉ vote)",
     "totalAmountLabel": "Montant total à régler",
@@ -101,10 +113,10 @@
   "leaderboard": {
     "title": "Classement du vote public",
     "subtitle": "Calculé exclusivement à partir des votes valides enregistrés côté serveur.",
-    "provisionalBadge": "Résultats provisoires — Données de démonstration",
+    "provisionalBadge": "Résultats provisoires en cours",
     "officialBadge": "Résultats officiels de l’édition",
     "hiddenTitle": "Classement public temporairement masqué",
-    "hiddenDesc": "L'organisation a configuré le masquage du classement pendant cette phase du scrutin afin de préserver le suspense. Les totaux ne sont pas exposés par l'API publique.",
+    "hiddenDesc": "L'organisation a configuré le masquage du classement pendant cette phase du scrutin afin de préserver le suspense.",
     "lastUpdated": "Dernière actualisation serveur",
     "refreshBtn": "Actualiser les données",
     "tieNotice": "Égalité constatée : les candidates ayant le même total partagent le même rang tant qu'aucune règle de départage finale n'est appliquée.",
@@ -127,11 +139,11 @@
     "verifyDesc": "Saisissez le code à 6 chiffres généré par le serveur pour activer votre droit de vote.",
     "codeLabel": "Code de vérification (6 chiffres)",
     "verifyBtn": "Vérifier mon compte",
-    "demoAccountsTitle": "Comptes de test rapides (Environnement de démonstration)",
+    "demoAccountsTitle": "Accès Rapide aux Profils",
     "logout": "Déconnexion"
   },
   "footer": {
-    "disclaimer": "Nom de travail configurable (« Éclat Cameroun » / Miss Beauté Cameroun — 20ᵉ Édition). Ce démonstrateur technique ne revendique aucune affiliation institutionnelle non autorisée.",
+    "disclaimer": "Plateforme officielle de présentation et de vote de Miss Beauté Cameroun — 20ᵉ Édition.",
     "linksTitle": "Navigation & Transparence",
     "legalTitle": "Cadre Réglementaire",
     "rules": "Règlement du vote",

@@ -136,8 +136,8 @@ export const CandidateProfilePage: React.FC = () => {
             />
           </div>
           <div className="px-2 pb-1 flex items-center justify-between text-xs text-[#74636E]">
-            <span>Portrait officiel autorisé</span>
-            <span>{t.banner.demoBadge}</span>
+            <span>Portrait officiel</span>
+            <span>{config.editionLabel}</span>
           </div>
         </motion.div>
 
@@ -161,7 +161,7 @@ export const CandidateProfilePage: React.FC = () => {
                 <span>{candidate.city}</span>
                 <span aria-hidden="true">·</span>
                 <span className="text-[#74636E] font-normal tabular-nums">
-                  {candidate.age} ans ({t.candidates.fictionalAgeNote})
+                  {candidate.age} {t.candidates.fictionalAgeNote}
                 </span>
               </div>
 

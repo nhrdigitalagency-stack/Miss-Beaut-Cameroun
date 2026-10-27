@@ -9,7 +9,7 @@ export const Footer: React.FC = () => {
     <footer className="bg-[#780938] text-white mt-20 border-t border-[#A80D55]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-14">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-white/15">
-          {/* Column 1: Brand & Transparent Work Name Notice */}
+          {/* Column 1: Brand */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-3">
               <img
@@ -23,14 +23,14 @@ export const Footer: React.FC = () => {
                   {config.contestName}
                 </p>
                 <p className="text-xs text-[#F1FACB]">
-                  {config.editionLabel} · Nom de travail : « {config.alternateWorkName} »
+                  {config.editionLabel}
                 </p>
               </div>
             </div>
             <p className="text-sm text-white/80 leading-relaxed max-w-md">
               {locale === 'en' ? config.sloganEn : config.sloganFr}
             </p>
-            <p className="text-xs text-white/70 leading-relaxed bg-black/20 p-3.5 rounded-2xl border border-white/10">
+            <p className="text-xs text-white/75 leading-relaxed bg-black/20 p-3.5 rounded-2xl border border-white/10">
               {t.footer.disclaimer}
             </p>
           </div>
@@ -68,7 +68,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link to="/admin" className="hover:text-[#D6F542] transition-colors">
-                  Administration (/admin)
+                  Administration
                 </Link>
               </li>
             </ul>
@@ -111,11 +111,9 @@ export const Footer: React.FC = () => {
 
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/70">
           <p>
-            © {new Date().getFullYear()} {config.contestName} ({config.alternateWorkName}). {t.footer.rights}
+            © {new Date().getFullYear()} {config.contestName} — {config.editionLabel}. {t.footer.rights}
           </p>
-          <p>
-            Mode : {config.demoMode ? t.banner.demoBadge : 'Production'}
-          </p>
+          <p>{config.organizerName}</p>
         </div>
       </div>
     </footer>

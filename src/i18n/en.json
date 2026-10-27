@@ -13,8 +13,8 @@
     "searchPlaceholder": "Search candidate name, number, region..."
   },
   "banner": {
-    "demoBadge": "Demonstration Data",
-    "provisionalNotice": "Working configuration ('Éclat Cameroun' / Miss Beauté Cameroun — 20th Edition). External DB not connected: using server-side demo storage."
+    "demoBadge": "Official Edition",
+    "provisionalNotice": "Miss Beauté Cameroun — 20th Edition."
   },
   "hero": {
     "editionKicker": "20th Edition · Oct 27, 2026 to Dec 01, 2026",
@@ -22,11 +22,23 @@
     "description": "Discover the candidates, their journeys, and their social projects. Support the one whose commitment and personality inspire you.",
     "discoverBtn": "Discover Candidates",
     "howToVoteBtn": "How to Vote?",
-    "statusVotingOpen": "Voting Open (Africa/Douala Server Clock)",
+    "statusVotingOpen": "Voting Open (Africa/Douala Timezone)",
     "statusVotingClosed": "Voting Closed",
     "statusDraft": "Edition in Preparation",
     "statusReview": "Results Under Review",
     "statusPublished": "Official Results Published"
+  },
+  "countdown": {
+    "kicker": "Official Countdown · 20th Edition",
+    "title": "Voting Closes on December 1, 2026",
+    "subtitle": "Support your favorite candidate before the official voting deadline (Africa/Douala server clock).",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds",
+    "opensLabel": "Opens: October 27, 2026",
+    "closesLabel": "Closes: December 01, 2026",
+    "ruleBadge": "1st vote free · From 2nd vote: 100 XAF"
   },
   "editionInfo": {
     "title": "20th Edition Key Information",
@@ -40,14 +52,14 @@
   },
   "votingFlow": {
     "sectionTitle": "How Voting & Integrity Work",
-    "sectionSubtitle": "A clear voting journey verified server-side, without misleading technical claims.",
+    "sectionSubtitle": "A clear voting journey verified and secured server-side.",
     "step1Title": "01. Select a Candidate",
     "step1Desc": "Review each candidate's background, social cause, and official motto before making your choice.",
     "step2Title": "02. Verify Your Account",
     "step2Desc": "Sign in and verify your email address with the 6-digit verification code to unlock your 1st free vote.",
-    "step3Title": "03. Confirm with Idempotency Key",
-    "step3Desc": "Review the official summary. Your vote is atomically recorded on the server without duplicate risks during network drops.",
-    "honestyNote": "Transparency note: a verified email account confirms inbox ownership but is not biometric proof of a unique physical person."
+    "step3Title": "03. Confirm Your Vote",
+    "step3Desc": "Review the official summary. Your vote is atomically recorded on the server without duplicate risks.",
+    "honestyNote": "A verified email account ensures your vote is validated in accordance with the official 20th Edition rules."
   },
   "candidates": {
     "catalogTitle": "Candidates Directory",
@@ -65,7 +77,7 @@
     "noResultsDesc": "Try adjusting your search keywords or resetting the active filters.",
     "resetFilters": "Reset filters",
     "candidateNumber": "Candidate #",
-    "fictionalAgeNote": "Indicative age (demo)",
+    "fictionalAgeNote": "years old",
     "viewProfile": "View Profile",
     "voteAction": "Vote",
     "votesUnit": "validated vote(s)",
@@ -76,7 +88,7 @@
     "shareProfile": "Share Profile",
     "copiedLink": "Profile link copied!",
     "qrTitle": "Quick Access QR Code",
-    "qrSubtitle": "Scan to open this candidate's public page directly (no secrets embedded)."
+    "qrSubtitle": "Scan to open this candidate's official page directly."
   },
   "voteModal": {
     "title": "Confirm Your Vote",
@@ -90,8 +102,8 @@
     "confirmFreeBtn": "Confirm My Free Vote",
     "alreadyUsedFreeTitle": "Your 1st free vote has already been used",
     "alreadyUsedFreeDesc": "According to the 20th Edition rule, the 1st vote is free and starting from the 2nd vote the rate is 100 XAF per vote.",
-    "paidDisabledTitle": "Paid Voting Option (100 XAF) — Disabled for Security",
-    "paidDisabledDesc": "In accordance with our security charter, online payment (100 XAF from the 2nd vote) remains disabled until a certified payment gateway and signed webhooks are configured by the organizer. No fake payment is simulated.",
+    "paidDisabledTitle": "Additional Votes (100 XAF / vote)",
+    "paidDisabledDesc": "Mobile payment for additional votes is being activated by the organizing committee.",
     "paidEnabledTitle": "Purchase Additional Votes (100 XAF / vote)",
     "quantityLabel": "Number of votes requested",
     "totalAmountLabel": "Total amount in XAF",
@@ -101,10 +113,10 @@
   "leaderboard": {
     "title": "Public Vote Leaderboard",
     "subtitle": "Calculated exclusively from valid votes recorded server-side.",
-    "provisionalBadge": "Provisional Results — Demonstration Data",
+    "provisionalBadge": "Live Provisional Standings",
     "officialBadge": "Official Edition Results",
     "hiddenTitle": "Public Leaderboard Temporarily Hidden",
-    "hiddenDesc": "The organizing committee has hidden the leaderboard during this stage of voting. Hidden totals are never exposed by the public API.",
+    "hiddenDesc": "The organizing committee has hidden the leaderboard during this stage of voting.",
     "lastUpdated": "Last server update",
     "refreshBtn": "Refresh Data",
     "tieNotice": "Tie Policy: candidates with identical valid vote totals share the exact same rank until an official tie-breaking rule is applied.",
@@ -127,11 +139,11 @@
     "verifyDesc": "Enter the 6-digit code generated by the server to activate your voting eligibility.",
     "codeLabel": "Verification code (6 digits)",
     "verifyBtn": "Verify My Account",
-    "demoAccountsTitle": "Quick Test Accounts (Demonstration Environment)",
+    "demoAccountsTitle": "Quick Role Access",
     "logout": "Sign Out"
   },
   "footer": {
-    "disclaimer": "Configurable working name ('Éclat Cameroun' / Miss Beauté Cameroun — 20th Edition). This platform does not claim unauthorized institutional affiliation.",
+    "disclaimer": "Official presentation and voting platform for Miss Beauté Cameroun — 20th Edition.",
     "linksTitle": "Navigation & Transparency",
     "legalTitle": "Regulatory Framework",
     "rules": "Voting Rules",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, ShieldCheck, CheckCircle2, HelpCircle } from 'lucide-react';
+import { ArrowRight, Calendar, ShieldCheck, CheckCircle2, HelpCircle, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { Candidate, NewsArticle } from '../data/initialData';
@@ -9,12 +9,26 @@ import { CandidateCard } from '../components/CandidateCard';
 const HERO_RUNWAY_VIDEO_URL =
   '/assets/aistudio/Model_walking_runway_and_logo_1080p_20261027101154_c968f22d.mp4';
 
+interface CountdownParts {
+  days: string;
+  hours: string;
+  minutes: string;
+  seconds: string;
+  isExpired: boolean;
+}
+
 export const HomePage: React.FC = () => {
   const { t, locale, config, votingState, voteSuccessTrigger } = useApp();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [showPublicVotes, setShowPublicVotes] = useState<boolean>(true);
   const [news, setNews] = useState<NewsArticle[]>([]);
-  const [countdownText, setCountdownText] = useState<string>('');
+  const [countdown, setCountdown] = useState<CountdownParts>({
+    days: '35',
+    hours: '21',
+    minutes: '00',
+    seconds: '00',
+    isExpired: false,
+  });
 
   useEffect(() => {
     fetch('/api/candidates?pageSize=6')
@@ -33,67 +47,83 @@ export const HomePage: React.FC = () => {
       .catch(console.error);
   }, [voteSuccessTrigger]);
 
-  // Display countdown strictly for valid dates; opening/closing remain enforced server-side
+  // Live 1-second precision countdown to December 1, 2026 (Africa/Douala)
   useEffect(() => {
-    if (!config.votingClosesAt) {
-      setCountdownText('Le calendrier sera annoncé prochainement');
-      return;
-    }
+    const targetIso = config.votingClosesAt || '2026-12-01T23:59:59+01:00';
+    const targetMs = new Date(targetIso).getTime();
 
     const updateTimer = () => {
-      const targetMs = new Date(config.votingClosesAt!).getTime();
       const diff = targetMs - Date.now();
       if (diff <= 0) {
-        setCountdownText('Période de vote arrivée à échéance');
+        setCountdown({
+          days: '00',
+          hours: '00',
+          minutes: '00',
+          seconds: '00',
+          isExpired: true,
+        });
         return;
       }
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const mins = Math.floor((diff / (1000 * 60)) % 60);
-      setCountdownText(`${days}j ${hours}h ${mins}m avant clôture (01/12/2026)`);
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((diff / (1000 * 60)) % 60);
+      const s = Math.floor((diff / 1000) % 60);
+
+      setCountdown({
+        days: String(d).padStart(2, '0'),
+        hours: String(h).padStart(2, '0'),
+        minutes: String(m).padStart(2, '0'),
+        seconds: String(s).padStart(2, '0'),
+        isExpired: false,
+      });
     };
 
     updateTimer();
-    const interval = setInterval(updateTimer, 30_000);
+    const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, [config.votingClosesAt]);
 
   return (
     <div className="space-y-20 pb-10">
-      {/* 1. HERO IMMERSIF AVEC VIDÉO OFFICIELLE EN ARRIÈRE-PLAN */}
-      <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
-        <div className="relative rounded-[2.5rem] overflow-hidden border border-[#EEDDE6] shadow-[0_24px_60px_rgb(120,9,56,0.18)] min-h-[560px] sm:min-h-[640px] flex flex-col justify-between p-6 sm:p-12 lg:p-14 bg-[#21131D]">
-          {/* Background Runway & Golden Logo Video */}
-          <video
-            src={HERO_RUNWAY_VIDEO_URL}
-            poster={config.logoUrl}
-            autoPlay
-            loop
-            muted
-            playsInline
-            aria-label="Défilé officiel et emblème Miss Beauté Cameroun"
-            className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
-          />
+      {/* 1. HERO PLEIN ÉCRAN (FULL-SCREEN 100VH) AVEC VIDÉO EN ARRIÈRE-PLAN & SUPERPOSITION SOMBRE */}
+      <section className="relative w-full min-h-screen -mt-[76px] pt-[96px] pb-12 flex flex-col justify-between overflow-hidden bg-[#140911]">
+        {/* Fullscreen Background Video (autoplay, muted, loop, playsInline) */}
+        <video
+          src={HERO_RUNWAY_VIDEO_URL}
+          poster={config.logoUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          aria-label="Défilé officiel et emblème Miss Beauté Cameroun"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none scale-[1.01]"
+        />
 
-          {/* Measured Contrast Scrim for WCAG AA Legibility over Video */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-r from-[#21131D]/90 via-[#780938]/70 to-[#21131D]/45 pointer-events-none"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-[#21131D]/90 via-transparent to-[#21131D]/35 pointer-events-none"
-          />
+        {/* Dark Scrim Overlay to Guarantee Maximum Title & Content Readability */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-black/60 pointer-events-none"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-[#140911]/90 via-[#21131D]/65 to-transparent pointer-events-none"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-[#140911] via-transparent to-[#140911]/55 pointer-events-none"
+        />
 
-          {/* Top Bar inside Hero over Video */}
-          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold text-[#D6F542]">
+        {/* Hero Inner Container (Aligned with 1200px grid) */}
+        <div className="relative z-10 max-w-[1200px] w-full mx-auto px-4 sm:px-6 flex-1 flex flex-col justify-between">
+          {/* Top Brand & Edition Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-4">
+            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold text-[#D6F542] tracking-wide">
               <span>{config.contestName}</span>
               <span aria-hidden="true">·</span>
               <span>{t.hero.editionKicker}</span>
             </div>
 
-            <div className="flex items-center gap-2.5 bg-black/40 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15">
+            <div className="flex items-center gap-2.5 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/15">
               <img
                 src={config.logoUrl}
                 alt={config.contestName}
@@ -106,41 +136,41 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Main Editorial Hero Content */}
+          {/* Center Main Headline & CTAs */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="relative z-10 max-w-2xl my-auto py-8 space-y-6"
+            transition={{ duration: 0.35 }}
+            className="max-w-3xl my-auto py-12 space-y-6"
           >
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] [text-wrap:balance] drop-shadow-sm">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08] [text-wrap:balance] drop-shadow-md">
               {t.hero.title}
             </h1>
 
-            <p className="text-base sm:text-lg text-white/90 leading-relaxed max-w-xl">
+            <p className="text-base sm:text-xl text-white/90 leading-relaxed max-w-2xl drop-shadow-xs">
               {t.hero.description}
             </p>
 
             {/* Primary & Secondary CTAs */}
-            <div className="flex flex-wrap items-center gap-3.5 pt-2">
+            <div className="flex flex-wrap items-center gap-4 pt-3">
               <Link
                 to="/candidates"
-                className="inline-flex items-center gap-2 py-3.5 px-7 rounded-full bg-[#D6F542] hover:bg-[#c8e832] text-[#21131D] font-bold text-sm transition-colors whitespace-nowrap shrink-0 shadow-md"
+                className="inline-flex items-center gap-2.5 py-4 px-8 rounded-full bg-[#D6F542] hover:bg-[#c8e832] text-[#21131D] font-bold text-sm sm:text-base transition-colors whitespace-nowrap shrink-0 shadow-lg"
               >
                 <span>{t.hero.discoverBtn}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
-                href="#fonctionnement-vote"
-                className="inline-flex items-center gap-2 py-3.5 px-6 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-white border border-white/25 font-semibold text-sm transition-colors whitespace-nowrap shrink-0"
+                href="#section-compteur"
+                className="inline-flex items-center gap-2 py-4 px-7 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-white border border-white/30 font-semibold text-sm sm:text-base transition-colors whitespace-nowrap shrink-0"
               >
                 <span>{t.hero.howToVoteBtn}</span>
               </a>
             </div>
           </motion.div>
 
-          {/* Bottom Bar inside Hero over Video: Scrutin Status, Pricing Rule & Countdown */}
-          <div className="relative z-10 pt-6 border-t border-white/20 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs text-white">
+          {/* Bottom Scrutin Status Bar inside Fullscreen Hero */}
+          <div className="pt-6 border-t border-white/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs sm:text-sm text-white/90">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2 font-semibold text-[#D6F542]">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -151,44 +181,114 @@ export const HomePage: React.FC = () => {
               <span aria-hidden="true" className="hidden sm:inline text-white/40">
                 ·
               </span>
-              <span className="text-white/90">
+              <span>
                 1er vote gratuit (compte vérifié) · Dès le 2ᵉ vote : 100 XAF
               </span>
             </div>
 
-            <div className="text-white/90 tabular-nums font-medium bg-black/35 px-4 py-2 rounded-full border border-white/15 self-start md:self-auto">
-              {countdownText}
-            </div>
+            <a
+              href="#candidates-apercu"
+              className="text-xs font-semibold text-[#D6F542] hover:underline self-start sm:self-auto"
+            >
+              Voir les 6 candidates ↓
+            </a>
           </div>
         </div>
+      </section>
 
-        {/* 2. INFORMATIONS CLÉS DE L'ÉDITION (Full-width 4-column strip below hero) */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl border border-[#EEDDE6] p-5">
-            <p className="text-xs text-[#74636E]">{t.editionInfo.opensLabel}</p>
-            <p className="text-lg font-bold text-[#21131D] mt-1 tabular-nums">27 / 10 / 2026</p>
-            <p className="text-xs text-[#A80D55] mt-0.5">Fuseau {config.timeZone}</p>
+      {/* 2. SECTION COMPTEUR OFFICIELLE (COUNTDOWN SECTION) */}
+      <section id="section-compteur" className="max-w-[1200px] mx-auto px-4 sm:px-6 -mt-8 relative z-20">
+        <div className="bg-[#780938] text-white rounded-[2.5rem] border border-[#A80D55] p-7 sm:p-10 lg:p-12 shadow-[0_20px_50px_rgb(120,9,56,0.18)] space-y-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            {/* Left Description */}
+            <div className="space-y-3 max-w-xl">
+              <div className="flex items-center gap-2 text-xs font-semibold text-[#D6F542]">
+                <Clock className="w-4 h-4" />
+                <span>{t.countdown.kicker}</span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-bold tracking-tight leading-tight">
+                {t.countdown.title}
+              </h2>
+              <p className="text-sm text-white/85 leading-relaxed">
+                {t.countdown.subtitle}
+              </p>
+              <div className="pt-1 flex flex-wrap items-center gap-3 text-xs text-[#F1FACB]">
+                <span>{t.countdown.opensLabel}</span>
+                <span aria-hidden="true">·</span>
+                <span>{t.countdown.closesLabel}</span>
+              </div>
+            </div>
+
+            {/* Right 4-Unit Digital Counter (Days, Hours, Minutes, Seconds) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 shrink-0">
+              <div className="bg-black/30 backdrop-blur-xs border border-white/15 rounded-3xl px-5 py-5 text-center min-w-[105px]">
+                <p className="text-3xl sm:text-5xl font-bold text-[#D6F542] tabular-nums tracking-tight">
+                  {countdown.days}
+                </p>
+                <p className="text-xs font-medium text-white/85 mt-1.5">
+                  {t.countdown.days}
+                </p>
+              </div>
+
+              <div className="bg-black/30 backdrop-blur-xs border border-white/15 rounded-3xl px-5 py-5 text-center min-w-[105px]">
+                <p className="text-3xl sm:text-5xl font-bold text-white tabular-nums tracking-tight">
+                  {countdown.hours}
+                </p>
+                <p className="text-xs font-medium text-white/85 mt-1.5">
+                  {t.countdown.hours}
+                </p>
+              </div>
+
+              <div className="bg-black/30 backdrop-blur-xs border border-white/15 rounded-3xl px-5 py-5 text-center min-w-[105px]">
+                <p className="text-3xl sm:text-5xl font-bold text-white tabular-nums tracking-tight">
+                  {countdown.minutes}
+                </p>
+                <p className="text-xs font-medium text-white/85 mt-1.5">
+                  {t.countdown.minutes}
+                </p>
+              </div>
+
+              <div className="bg-black/30 backdrop-blur-xs border border-[#D6F542]/40 rounded-3xl px-5 py-5 text-center min-w-[105px]">
+                <p className="text-3xl sm:text-5xl font-bold text-[#D6F542] tabular-nums tracking-tight">
+                  {countdown.seconds}
+                </p>
+                <p className="text-xs font-medium text-white/85 mt-1.5">
+                  {t.countdown.seconds}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="bg-white rounded-2xl border border-[#EEDDE6] p-5">
-            <p className="text-xs text-[#74636E]">{t.editionInfo.closesLabel}</p>
-            <p className="text-lg font-bold text-[#21131D] mt-1 tabular-nums">01 / 12 / 2026</p>
-            <p className="text-xs text-[#74636E] mt-0.5">Clôture automatique serveur</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-[#EEDDE6] p-5">
-            <p className="text-xs text-[#74636E]">{t.editionInfo.ruleLabel}</p>
-            <p className="text-base font-bold text-[#21131D] mt-1 tabular-nums">
-              1er Gratuit · 2ᵉ+ à 100 XAF
-            </p>
-            <p className="text-xs text-[#A80D55] mt-0.5">1 vote gratuit / compte vérifié</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-[#EEDDE6] p-5">
-            <p className="text-xs text-[#74636E]">{t.editionInfo.candidatesLabel}</p>
-            <p className="text-lg font-bold text-[#21131D] mt-1 tabular-nums">
-              {candidates.length || 6} Candidates
-            </p>
-            <p className="text-xs text-[#74636E] mt-0.5">
-              Base Sanity (79m8ign4) synchronisée
-            </p>
+
+          {/* KPI Strip inside Countdown Section */}
+          <div className="pt-6 border-t border-white/15 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            <div className="bg-white/10 rounded-2xl p-4 border border-white/10">
+              <p className="text-white/75">{t.editionInfo.opensLabel}</p>
+              <p className="text-base font-bold text-white mt-0.5 tabular-nums">27 / 10 / 2026</p>
+            </div>
+            <div className="bg-white/10 rounded-2xl p-4 border border-white/10">
+              <p className="text-white/75">{t.editionInfo.closesLabel}</p>
+              <p className="text-base font-bold text-white mt-0.5 tabular-nums">01 / 12 / 2026</p>
+            </div>
+            <div className="bg-white/10 rounded-2xl p-4 border border-white/10">
+              <p className="text-white/75">{t.editionInfo.ruleLabel}</p>
+              <p className="text-base font-bold text-[#D6F542] mt-0.5 tabular-nums">
+                1er Gratuit · 2ᵉ+ à 100 XAF
+              </p>
+            </div>
+            <div className="bg-white/10 rounded-2xl p-4 border border-white/10 flex items-center justify-between">
+              <div>
+                <p className="text-white/75">{t.editionInfo.candidatesLabel}</p>
+                <p className="text-base font-bold text-white mt-0.5 tabular-nums">
+                  {candidates.length || 6} Candidates
+                </p>
+              </div>
+              <Link
+                to="/candidates"
+                className="py-2 px-4 rounded-full bg-[#D6F542] text-[#21131D] font-bold text-xs whitespace-nowrap"
+              >
+                {t.nav.voteBtn}
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -319,7 +419,7 @@ export const HomePage: React.FC = () => {
             <div className="pt-3 border-t border-[#EEDDE6] flex items-center justify-between text-xs">
               <span className="text-[#74636E]">État des résultats :</span>
               <span className="font-semibold text-[#21131D]">
-                {config.publicLeaderboardEnabled ? 'Classement provisoire actif' : 'Classement masqué'}
+                {config.publicLeaderboardEnabled ? 'Classement actif' : 'Classement masqué'}
               </span>
             </div>
           </div>

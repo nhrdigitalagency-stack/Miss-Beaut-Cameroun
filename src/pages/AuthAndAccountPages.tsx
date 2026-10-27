@@ -178,16 +178,16 @@ export const AuthPage: React.FC = () => {
           </form>
         </div>
 
-        {/* Quick Demo Accounts Column */}
+        {/* Quick Role Access Column */}
         <div className="lg:col-span-5 bg-[#780938] text-white rounded-3xl p-6 sm:p-8 space-y-5">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs font-semibold text-[#D6F542]">
               <KeyRound className="w-4 h-4" />
-              <span>Environnement de démonstration</span>
+              <span>Accès Rapide</span>
             </div>
             <h2 className="text-lg font-bold">{t.auth.demoAccountsTitle}</h2>
             <p className="text-xs text-white/80 leading-relaxed">
-              Pour tester immédiatement les différents rôles (Votant vérifié, Administrateur principal, Gestionnaire des candidates, Modérateur) sans saisie manuelle :
+              Connexion rapide aux différents espaces de la plateforme (Votant vérifié, Administrateur principal, Gestionnaire des candidates, Modérateur) :
             </p>
           </div>
 
@@ -354,7 +354,7 @@ export const AccountPage: React.FC = () => {
             <p className="text-xs sm:text-sm text-[#74636E]">{t.auth.verifyDesc}</p>
             {user.verificationCode && (
               <p className="text-xs font-semibold text-[#A80D55] pt-1">
-                Code de démonstration généré par le serveur :{' '}
+                Votre code de vérification :{' '}
                 <span className="font-mono text-sm bg-white px-2.5 py-1 rounded-lg border border-[#EEDDE6]">
                   {user.verificationCode}
                 </span>

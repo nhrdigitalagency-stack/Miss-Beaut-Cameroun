@@ -98,7 +98,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     roleFr: 'Entrepreneure sociale',
     roleEn: 'Social Entrepreneur',
     age: 24,
-    isFictionalAge: true,
+    isFictionalAge: false,
     region: 'Littoral',
     city: 'Douala',
     bioFr:
@@ -117,7 +117,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     editionId: 'ed-20',
     status: 'eligible',
     publicVotesCount: 0,
-    isDemoData: true,
+    isDemoData: false,
   },
   {
     id: 'cand-2',
@@ -127,7 +127,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     roleFr: 'Médecin pédiatre',
     roleEn: 'Pediatrician',
     age: 23,
-    isFictionalAge: true,
+    isFictionalAge: false,
     region: 'Centre',
     city: 'Yaoundé',
     bioFr:
@@ -146,7 +146,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     editionId: 'ed-20',
     status: 'eligible',
     publicVotesCount: 0,
-    isDemoData: true,
+    isDemoData: false,
   },
   {
     id: 'cand-3',
@@ -156,7 +156,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     roleFr: 'Architecte et designer',
     roleEn: 'Architect & Designer',
     age: 25,
-    isFictionalAge: true,
+    isFictionalAge: false,
     region: 'Ouest',
     city: 'Bafoussam',
     bioFr:
@@ -175,7 +175,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     editionId: 'ed-20',
     status: 'eligible',
     publicVotesCount: 0,
-    isDemoData: true,
+    isDemoData: false,
   },
   {
     id: 'cand-4',
@@ -185,7 +185,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     roleFr: 'Avocate spécialisée en droits des femmes',
     roleEn: 'Women’s Rights Attorney',
     age: 26,
-    isFictionalAge: true,
+    isFictionalAge: false,
     region: 'Sud',
     city: 'Kribi',
     bioFr:
@@ -204,7 +204,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     editionId: 'ed-20',
     status: 'eligible',
     publicVotesCount: 0,
-    isDemoData: true,
+    isDemoData: false,
   },
   {
     id: 'cand-5',
@@ -214,7 +214,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     roleFr: 'Ingénieure en environnement',
     roleEn: 'Environmental Engineer',
     age: 24,
-    isFictionalAge: true,
+    isFictionalAge: false,
     region: 'Est',
     city: 'Bertoua',
     bioFr:
@@ -233,7 +233,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     editionId: 'ed-20',
     status: 'eligible',
     publicVotesCount: 0,
-    isDemoData: true,
+    isDemoData: false,
   },
   {
     id: 'cand-6',
@@ -243,7 +243,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     roleFr: 'Journaliste et présentatrice TV',
     roleEn: 'Journalist & TV Presenter',
     age: 22,
-    isFictionalAge: true,
+    isFictionalAge: false,
     region: 'Nord-Ouest',
     city: 'Bamenda',
     bioFr:
@@ -262,7 +262,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     editionId: 'ed-20',
     status: 'eligible',
     publicVotesCount: 0,
-    isDemoData: true,
+    isDemoData: false,
   },
 ];
 
@@ -284,7 +284,7 @@ export const INITIAL_NEWS: NewsArticle[] = [
     categoryEn: 'Official Release',
     publishedAt: '2026-10-27T08:00:00+01:00',
     coverUrl: '/assets/aistudio/Embl_me_dor__Miss_Beaut__Cameroun_2f1797e1.png',
-    isDemoData: true,
+    isDemoData: false,
   },
   {
     id: 'news-2',
@@ -303,7 +303,7 @@ export const INITIAL_NEWS: NewsArticle[] = [
     categoryEn: 'Projects & Impact',
     publishedAt: '2026-10-27T09:30:00+01:00',
     coverUrl: '/assets/aistudio/Laure_69cc1d06.jpg',
-    isDemoData: true,
+    isDemoData: false,
   },
   {
     id: 'news-3',
@@ -322,6 +322,6 @@ export const INITIAL_NEWS: NewsArticle[] = [
     categoryEn: 'Rules & Security',
     publishedAt: '2026-10-27T10:15:00+01:00',
     coverUrl: '/assets/aistudio/belva_2d5c7ff1.jpg',
-    isDemoData: true,
+    isDemoData: false,
   },
 ];

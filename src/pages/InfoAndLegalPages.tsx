@@ -20,7 +20,7 @@ export const ContestPage: React.FC = () => {
           />
           <div>
             <p className="text-xs font-semibold text-[#A80D55]">
-              {config.editionLabel} · Nom de travail : « {config.alternateWorkName} »
+              {config.editionLabel}
             </p>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#21131D]">
               Présentation du concours {config.contestName}
@@ -48,15 +48,8 @@ export const ContestPage: React.FC = () => {
           <div className="p-5 rounded-2xl bg-[#FFF8FB] border border-[#EEDDE6] space-y-1.5">
             <p className="text-xs font-semibold text-[#A80D55]">Cadre éditorial</p>
             <p className="text-sm font-bold text-[#21131D]">Respect & Dignité</p>
-            <p className="text-xs text-[#74636E]">Aucun critère discriminatoire ou dévalorisant</p>
+            <p className="text-xs text-[#74636E]">Valorisation des projets sociaux et culturels</p>
           </div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-[#74636E] space-y-1.5">
-          <p className="font-semibold text-[#21131D]">Mention de transparence institutionnelle</p>
-          <p>
-            Le nom « {config.alternateWorkName} » / « {config.contestName} » est configuré comme identité de travail. Cette plateforme n'invente aucun sponsor, aucune certification extérieure ni aucun partenariat institutionnel non validé.
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 pt-2">
