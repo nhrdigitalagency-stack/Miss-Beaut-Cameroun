@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { RefreshCw, EyeOff, Info, ShieldAlert } from 'lucide-react';
+import { RefreshCw, EyeOff, Info, ShieldAlert, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { INITIAL_CANDIDATES } from '../data/initialData';
@@ -25,27 +25,43 @@ interface LeaderboardEntry {
 export const LeaderboardPage: React.FC = () => {
   const { t, locale, config, voteSuccessTrigger } = useApp();
   const [enabled, setEnabled] = useState<boolean>(true);
-  const [entries, setEntries] = useState<LeaderboardEntry[]>(() =>
-    INITIAL_CANDIDATES.map((c) => ({
-      id: c.id,
-      slug: c.slug,
-      number: c.number,
-      name: c.name,
-      region: c.region,
-      city: c.city,
-      roleFr: c.roleFr,
-      roleEn: c.roleEn,
-      photoUrl: c.photoUrl,
-      focalPoint: c.focalPoint,
-      votes: c.publicVotesCount || 0,
-      rank: 1,
-      isTied: true,
-    }))
-  );
+  const [entries, setEntries] = useState<LeaderboardEntry[]>(() => {
+    const sorted = [...INITIAL_CANDIDATES]
+      .map((c) => ({
+        id: c.id,
+        slug: c.slug,
+        number: c.number,
+        name: c.name,
+        region: c.region,
+        city: c.city,
+        roleFr: c.roleFr,
+        roleEn: c.roleEn,
+        photoUrl: c.photoUrl,
+        focalPoint: c.focalPoint,
+        votes: c.publicVotesCount || 0,
+      }))
+      .sort((a, b) => (b.votes !== a.votes ? b.votes - a.votes : a.number - b.number));
+
+    let currentRank = 1;
+    return sorted.map((item, idx) => {
+      if (idx > 0 && item.votes !== sorted[idx - 1].votes) {
+        currentRank = idx + 1;
+      }
+      return {
+        ...item,
+        rank: currentRank,
+        isTied:
+          (idx > 0 && item.votes === sorted[idx - 1].votes) ||
+          (idx < sorted.length - 1 && item.votes === sorted[idx + 1].votes),
+      };
+    });
+  });
   const [hasTies, setHasTies] = useState<boolean>(true);
   const [isOfficial, setIsOfficial] = useState<boolean>(false);
   const [serverTimeIso, setServerTimeIso] = useState<string>(new Date().toISOString());
-  const [totalValidVotes, setTotalValidVotes] = useState<number>(0);
+  const [totalValidVotes, setTotalValidVotes] = useState<number>(() =>
+    INITIAL_CANDIDATES.reduce((acc, c) => acc + (c.publicVotesCount || 0), 0)
+  );
   const [loading, setLoading] = useState<boolean>(false);
 
   const fetchLeaderboard = useCallback(async () => {
@@ -150,87 +166,101 @@ export const LeaderboardPage: React.FC = () => {
           {/* Sober Editorial Podium (Top 3) */}
           {entries.length >= 3 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-              {entries.slice(0, 3).map((item) => (
-                <motion.div
-                  key={item.id}
-                  layout
-                  className={`rounded-3xl border p-6 flex flex-col justify-between ${
-                    item.rank === 1
-                      ? 'bg-[#780938] text-white border-[#A80D55]'
-                      : 'bg-white text-[#21131D] border-[#EEDDE6]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 pb-4">
-                    <span
-                      className={`text-xs font-bold tabular-nums ${
-                        item.rank === 1 ? 'text-[#D6F542]' : 'text-[#A80D55]'
-                      }`}
-                    >
-                      Rang #{item.rank} {item.isTied ? '(Égalité)' : ''}
-                    </span>
-                    <span
-                      className={`text-xs tabular-nums ${
-                        item.rank === 1 ? 'text-white/80' : 'text-[#74636E]'
-                      }`}
-                    >
-                      Candidate n°0{item.number}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-4 my-2">
-                    <img
-                      src={item.photoUrl}
-                      alt={item.name}
-                      referrerPolicy="no-referrer"
-                      style={{ objectPosition: item.focalPoint }}
-                      className="w-16 h-16 rounded-2xl object-cover shrink-0 border border-[#EEDDE6]"
-                    />
-                    <div className="min-w-0">
-                      <h2 className="text-lg font-bold truncate">{item.name}</h2>
-                      <p
-                        className={`text-xs truncate ${
+              {entries.slice(0, 3).map((item) => {
+                const isSoleLeader = item.rank === 1 && !item.isTied && item.votes > 0;
+                return (
+                  <motion.div
+                    key={item.id}
+                    layout
+                    className={`rounded-3xl border p-6 flex flex-col justify-between ${
+                      isSoleLeader
+                        ? 'leader-lime-glow bg-[#780938] text-white'
+                        : item.rank === 1
+                        ? 'bg-[#780938] text-white border-[#A80D55]'
+                        : 'bg-white text-[#21131D] border-[#EEDDE6]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 pb-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 text-xs font-bold tabular-nums ${
+                          isSoleLeader
+                            ? 'py-1 px-3 rounded-full bg-[#D6F542] text-[#21131D]'
+                            : item.rank === 1
+                            ? 'text-[#D6F542]'
+                            : 'text-[#A80D55]'
+                        }`}
+                      >
+                        {isSoleLeader && <Sparkles className="w-3.5 h-3.5 shrink-0" />}
+                        <span>
+                          Rang #{item.rank} {item.isTied ? '(Égalité)' : isSoleLeader ? '· En tête' : ''}
+                        </span>
+                      </span>
+                      <span
+                        className={`text-xs tabular-nums ${
                           item.rank === 1 ? 'text-white/80' : 'text-[#74636E]'
                         }`}
                       >
-                        {locale === 'en' ? item.roleEn : item.roleFr} · {item.region}
-                      </p>
+                        Candidate n°0{item.number}
+                      </span>
                     </div>
-                  </div>
 
-                  <div
-                    className={`mt-5 pt-4 border-t flex items-center justify-between ${
-                      item.rank === 1 ? 'border-white/15' : 'border-[#EEDDE6]'
-                    }`}
-                  >
-                    <div>
-                      <p
-                        className={`text-[11px] ${
-                          item.rank === 1 ? 'text-white/75' : 'text-[#74636E]'
+                    <div className="flex items-center gap-4 my-2">
+                      <img
+                        src={item.photoUrl}
+                        alt={item.name}
+                        referrerPolicy="no-referrer"
+                        style={{ objectPosition: item.focalPoint }}
+                        className={`w-16 h-16 rounded-2xl object-cover shrink-0 border-2 ${
+                          isSoleLeader ? 'border-[#D6F542]' : 'border-[#EEDDE6]'
                         }`}
-                      >
-                        {t.leaderboard.votes}
-                      </p>
-                      <p
-                        className={`text-xl font-bold tabular-nums ${
-                          item.rank === 1 ? 'text-[#D6F542]' : 'text-[#21131D]'
-                        }`}
-                      >
-                        {item.votes}
-                      </p>
+                      />
+                      <div className="min-w-0">
+                        <h2 className="text-lg font-bold truncate">{item.name}</h2>
+                        <p
+                          className={`text-xs truncate ${
+                            item.rank === 1 ? 'text-white/80' : 'text-[#74636E]'
+                          }`}
+                        >
+                          {locale === 'en' ? item.roleEn : item.roleFr} · {item.region}
+                        </p>
+                      </div>
                     </div>
-                    <Link
-                      to={`/candidates/${item.slug}`}
-                      className={`py-2 px-4 rounded-full text-xs font-semibold ${
-                        item.rank === 1
-                          ? 'bg-[#D6F542] text-[#21131D]'
-                          : 'bg-[#FFF8FB] border border-[#EEDDE6] text-[#21131D]'
+
+                    <div
+                      className={`mt-5 pt-4 border-t flex items-center justify-between ${
+                        item.rank === 1 ? 'border-white/15' : 'border-[#EEDDE6]'
                       }`}
                     >
-                      Profil
-                    </Link>
-                  </div>
-                </motion.div>
-              ))}
+                      <div>
+                        <p
+                          className={`text-[11px] ${
+                            item.rank === 1 ? 'text-white/75' : 'text-[#74636E]'
+                          }`}
+                        >
+                          {t.leaderboard.votes}
+                        </p>
+                        <p
+                          className={`text-xl font-bold tabular-nums ${
+                            item.rank === 1 ? 'text-[#D6F542]' : 'text-[#21131D]'
+                          }`}
+                        >
+                          {item.votes}
+                        </p>
+                      </div>
+                      <Link
+                        to={`/candidates/${item.slug}`}
+                        className={`py-2 px-4 rounded-full text-xs font-semibold ${
+                          item.rank === 1
+                            ? 'bg-[#D6F542] text-[#21131D]'
+                            : 'bg-[#FFF8FB] border border-[#EEDDE6] text-[#21131D]'
+                        }`}
+                      >
+                        Profil
+                      </Link>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
 
@@ -255,45 +285,69 @@ export const LeaderboardPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EEDDE6] text-sm">
-                  {entries.map((entry) => (
-                    <tr key={entry.id} className="hover:bg-[#FFF8FB]/60 transition-colors">
-                      <td className="py-4 px-6 font-bold text-[#21131D] tabular-nums">
-                        #{entry.rank}{' '}
-                        {entry.isTied && (
-                          <span className="text-xs font-normal text-[#74636E]">(ex æquo)</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-6 font-semibold text-[#A80D55] tabular-nums">
-                        0{entry.number}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={entry.photoUrl}
-                            alt={entry.name}
-                            referrerPolicy="no-referrer"
-                            style={{ objectPosition: entry.focalPoint }}
-                            className="w-10 h-10 rounded-full object-cover border border-[#EEDDE6] shrink-0"
-                          />
-                          <span className="font-bold text-[#21131D]">{entry.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-xs text-[#74636E]">
-                        {entry.region} · {locale === 'en' ? entry.roleEn : entry.roleFr}
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-[#21131D] tabular-nums">
-                        {entry.votes}
-                      </td>
-                      <td className="py-4 px-6 text-right">
-                        <Link
-                          to={`/candidates/${entry.slug}`}
-                          className="inline-flex py-1.5 px-4 rounded-full border border-[#EEDDE6] text-xs font-semibold text-[#21131D] hover:bg-[#FFF8FB]"
-                        >
-                          Voir profil
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
+                  {entries.map((entry) => {
+                    const isSoleLeader = entry.rank === 1 && !entry.isTied && entry.votes > 0;
+                    return (
+                      <tr
+                        key={entry.id}
+                        className={`transition-colors ${
+                          isSoleLeader
+                            ? 'bg-[#F1FACB]/75 shadow-[inset_0_0_0_2px_#D6F542,0_0_18px_rgba(214,245,66,0.75)]'
+                            : 'hover:bg-[#FFF8FB]/60'
+                        }`}
+                      >
+                        <td className="py-4 px-6 font-bold text-[#21131D] tabular-nums">
+                          <div className="flex items-center gap-2">
+                            <span>#{entry.rank}</span>
+                            {entry.isTied && (
+                              <span className="text-xs font-normal text-[#74636E]">(ex æquo)</span>
+                            )}
+                            {isSoleLeader && (
+                              <span className="inline-flex items-center gap-1 py-0.5 px-2.5 rounded-full bg-[#D6F542] text-[#21131D] text-[11px] font-bold">
+                                <Sparkles className="w-3 h-3" />
+                                <span>En tête</span>
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 font-semibold text-[#A80D55] tabular-nums">
+                          0{entry.number}
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={entry.photoUrl}
+                              alt={entry.name}
+                              referrerPolicy="no-referrer"
+                              style={{ objectPosition: entry.focalPoint }}
+                              className={`w-10 h-10 rounded-full object-cover shrink-0 ${
+                                isSoleLeader ? 'border-2 border-[#D6F542]' : 'border border-[#EEDDE6]'
+                              }`}
+                            />
+                            <span className="font-bold text-[#21131D]">{entry.name}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-xs text-[#74636E]">
+                          {entry.region} · {locale === 'en' ? entry.roleEn : entry.roleFr}
+                        </td>
+                        <td className="py-4 px-6 text-right font-bold text-[#21131D] tabular-nums">
+                          {entry.votes}
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <Link
+                            to={`/candidates/${entry.slug}`}
+                            className={`inline-flex py-1.5 px-4 rounded-full text-xs font-semibold ${
+                              isSoleLeader
+                                ? 'bg-[#D6F542] text-[#21131D] font-bold'
+                                : 'border border-[#EEDDE6] text-[#21131D] hover:bg-[#FFF8FB]'
+                            }`}
+                          >
+                            Voir profil
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

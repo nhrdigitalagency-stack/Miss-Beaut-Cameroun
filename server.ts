@@ -163,12 +163,32 @@ function recomputeValidVoteTotals(): Map<string, number> {
   for (const c of candidatesStore) {
     counts.set(c.id, 0);
   }
-  for (const v of votesStore) {
-    if (v.status === 'valid') {
+  const validVotes = votesStore.filter((v) => v.status === 'valid');
+  if (validVotes.length > 0) {
+    for (const v of validVotes) {
       counts.set(v.candidateId, (counts.get(v.candidateId) || 0) + v.quantity);
+    }
+  } else {
+    for (const c of candidatesStore) {
+      const initCand = INITIAL_CANDIDATES.find((ic) => ic.id === c.id);
+      counts.set(c.id, c.publicVotesCount || initCand?.publicVotesCount || 0);
     }
   }
   return counts;
+}
+
+function computeLeaderCandidateId(totals: Map<string, number>): string | null {
+  let maxVotes = 0;
+  for (const c of candidatesStore) {
+    if (c.status !== 'eligible') continue;
+    const v = totals.get(c.id) || 0;
+    if (v > maxVotes) maxVotes = v;
+  }
+  if (maxVotes <= 0) return null;
+  const leaders = candidatesStore.filter(
+    (c) => c.status === 'eligible' && (totals.get(c.id) || 0) === maxVotes
+  );
+  return leaders.length === 1 ? leaders[0].id : null;
 }
 
 function isVotingCurrentlyOpen(): { open: boolean; code: string; messageFr: string; messageEn: string } {
@@ -351,9 +371,11 @@ async function startServer() {
     const paginated = list.slice(startIndex, startIndex + pageSize);
 
     const regions = Array.from(new Set(candidatesStore.map((c) => c.region))).sort();
+    const leaderCandidateId = showPublicVotes ? computeLeaderCandidateId(validTotals) : null;
 
     res.json({
       candidates: paginated,
+      leaderCandidateId,
       totalCount,
       page,
       pageSize,
@@ -373,12 +395,14 @@ async function startServer() {
     const validTotals = recomputeValidVoteTotals();
     const showPublicVotes =
       serverConfig.publicLeaderboardEnabled && serverConfig.leaderboardMode !== 'hidden_during_voting';
+    const leaderCandidateId = showPublicVotes ? computeLeaderCandidateId(validTotals) : null;
 
     res.json({
       candidate: {
         ...candidate,
         publicVotesCount: showPublicVotes ? validTotals.get(candidate.id) || 0 : 0,
       },
+      leaderCandidateId,
       showPublicVotes,
       votingState: isVotingCurrentlyOpen(),
       serverTimeIso: new Date().toISOString(),

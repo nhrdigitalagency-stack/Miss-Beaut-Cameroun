@@ -134,16 +134,42 @@ function getLocalAuditLogs(): AuditLogEntry[] {
   ];
 }
 
-// Fetch from Sanity Public Content Lake if available
-async function fetchSanityCandidates(): Promise<Candidate[] | null> {
+export function getLeadingCandidateId(
+  candidates: { id: string; publicVotesCount?: number; votes?: number }[]
+): string | null {
+  if (!candidates || candidates.length === 0) return null;
+  let maxVotes = 0;
+  for (const c of candidates) {
+    const v = c.publicVotesCount ?? c.votes ?? 0;
+    if (v > maxVotes) {
+      maxVotes = v;
+    }
+  }
+  if (maxVotes <= 0) return null;
+  const leaders = candidates.filter((c) => (c.publicVotesCount ?? c.votes ?? 0) === maxVotes);
+  return leaders.length === 1 ? leaders[0].id : null;
+}
+
+// Fetch both candidates and valid voteRecords from Sanity Public Content Lake
+async function fetchSanityCandidatesAndVotes(): Promise<{
+  candidates: Candidate[];
+  votes: VoteRecord[];
+} | null> {
   try {
-    const query = encodeURIComponent('*[_type == "candidate"] | order(number asc)');
+    const query = encodeURIComponent('*[_type in ["candidate", "voteRecord"]]');
     const res = await fetch(`${SANITY_PUBLIC_QUERY_URL}?query=${query}`);
     if (!res.ok) return null;
     const json = await res.json();
-    if (Array.isArray(json.result) && json.result.length >= 6) {
-      saveLocalCandidates(json.result);
-      return json.result;
+    if (!Array.isArray(json.result)) return null;
+
+    const cands = json.result
+      .filter((doc: any) => doc._type === 'candidate')
+      .sort((a: any, b: any) => (a.number || 0) - (b.number || 0));
+    const votes = json.result.filter((doc: any) => doc._type === 'voteRecord');
+
+    if (cands.length >= 6) {
+      saveLocalCandidates(cands);
+      return { candidates: cands, votes };
     }
     return null;
   } catch {
@@ -151,17 +177,38 @@ async function fetchSanityCandidates(): Promise<Candidate[] | null> {
   }
 }
 
-function computeCandidateVotesMap(candidates: Candidate[]): Map<string, number> {
+function computeCandidateVotesMap(
+  candidates: Candidate[],
+  sanityVotes: VoteRecord[] = []
+): Map<string, number> {
   const map = new Map<string, number>();
   for (const c of candidates) {
-    map.set(c.id, c.publicVotesCount || 0);
+    map.set(c.id, 0);
   }
-  const localVotes = getLocalVotes();
-  for (const v of localVotes) {
-    if (v.status === 'valid') {
-      map.set(v.candidateId, (map.get(v.candidateId) || 0) + v.quantity);
+
+  // Merge Sanity votes and local votes without duplicates
+  const allVotesById = new Map<string, VoteRecord>();
+  for (const sv of sanityVotes) {
+    if (sv && sv.id) allVotesById.set(sv.id, sv);
+  }
+  for (const lv of getLocalVotes()) {
+    if (lv && lv.id) allVotesById.set(lv.id, lv);
+  }
+
+  if (allVotesById.size > 0) {
+    for (const v of allVotesById.values()) {
+      if (v.status === 'valid') {
+        map.set(v.candidateId, (map.get(v.candidateId) || 0) + (v.quantity || 1));
+      }
+    }
+  } else {
+    // Fallback to initial candidate publicVotesCount if offline
+    for (const c of candidates) {
+      const initCand = INITIAL_CANDIDATES.find((ic) => ic.id === c.id);
+      map.set(c.id, c.publicVotesCount || initCand?.publicVotesCount || 0);
     }
   }
+
   return map;
 }
 
@@ -182,16 +229,28 @@ export async function fetchCandidatesCatalog(params: {
 
   const serverRes = await tryServerApi(`/api/candidates?${qs.toString()}`);
   if (serverRes && serverRes.ok && Array.isArray(serverRes.data?.candidates)) {
-    return serverRes.data;
+    const leaderCandidateId =
+      serverRes.data.leaderCandidateId ?? getLeadingCandidateId(serverRes.data.candidates);
+    return {
+      ...serverRes.data,
+      leaderCandidateId,
+    };
   }
 
   // Fallback for Vercel / Static deployment: use Sanity Public API or INITIAL_CANDIDATES
-  const sanityCands = await fetchSanityCandidates();
-  const baseCandidates = sanityCands || getLocalCandidates();
+  const sanityData = await fetchSanityCandidatesAndVotes();
+  const baseCandidates = sanityData?.candidates || getLocalCandidates();
   const config = getLocalConfig();
-  const votesMap = computeCandidateVotesMap(baseCandidates);
+  const votesMap = computeCandidateVotesMap(baseCandidates, sanityData?.votes || []);
   const showPublicVotes =
     config.publicLeaderboardEnabled && config.leaderboardMode !== 'hidden_during_voting';
+
+  const allWithVotes = baseCandidates.map((c) => ({
+    ...c,
+    publicVotesCount: showPublicVotes ? votesMap.get(c.id) || 0 : 0,
+  }));
+
+  const leaderCandidateId = showPublicVotes ? getLeadingCandidateId(allWithVotes) : null;
 
   const qNorm = (params.q || '')
     .trim()
@@ -199,10 +258,7 @@ export async function fetchCandidatesCatalog(params: {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
-  let list = baseCandidates.map((c) => ({
-    ...c,
-    publicVotesCount: showPublicVotes ? votesMap.get(c.id) || 0 : 0,
-  }));
+  let list = [...allWithVotes];
 
   if (qNorm) {
     list = list.filter((c) => {
@@ -235,6 +291,7 @@ export async function fetchCandidatesCatalog(params: {
 
   return {
     candidates: paginated,
+    leaderCandidateId,
     totalCount,
     page,
     pageSize,
@@ -251,20 +308,28 @@ export async function fetchSingleCandidate(slug: string) {
     return serverRes.data;
   }
 
-  const baseCandidates = (await fetchSanityCandidates()) || getLocalCandidates();
+  const sanityData = await fetchSanityCandidatesAndVotes();
+  const baseCandidates = sanityData?.candidates || getLocalCandidates();
   const candidate = baseCandidates.find((c) => c.slug === slug || c.id === slug);
   if (!candidate) return null;
 
   const config = getLocalConfig();
-  const votesMap = computeCandidateVotesMap(baseCandidates);
+  const votesMap = computeCandidateVotesMap(baseCandidates, sanityData?.votes || []);
   const showPublicVotes =
     config.publicLeaderboardEnabled && config.leaderboardMode !== 'hidden_during_voting';
+
+  const allWithVotes = baseCandidates.map((c) => ({
+    ...c,
+    publicVotesCount: showPublicVotes ? votesMap.get(c.id) || 0 : 0,
+  }));
+  const leaderCandidateId = showPublicVotes ? getLeadingCandidateId(allWithVotes) : null;
 
   return {
     candidate: {
       ...candidate,
       publicVotesCount: showPublicVotes ? votesMap.get(candidate.id) || 0 : 0,
     },
+    leaderCandidateId,
     showPublicVotes,
     votingState: {
       open: config.editionStatus === 'voting_open',
@@ -292,12 +357,14 @@ export async function fetchLeaderboardData() {
       mode: config.leaderboardMode,
       serverTimeIso: new Date().toISOString(),
       entries: [],
+      leaderCandidateId: null,
       totalValidVotes: null,
     };
   }
 
-  const baseCandidates = (await fetchSanityCandidates()) || getLocalCandidates();
-  const votesMap = computeCandidateVotesMap(baseCandidates);
+  const sanityData = await fetchSanityCandidatesAndVotes();
+  const baseCandidates = sanityData?.candidates || getLocalCandidates();
+  const votesMap = computeCandidateVotesMap(baseCandidates, sanityData?.votes || []);
 
   const eligible = baseCandidates
     .filter((c) => c.status === 'eligible')
@@ -339,6 +406,7 @@ export async function fetchLeaderboardData() {
   });
 
   const totalValidVotes = eligible.reduce((acc, cur) => acc + cur.votes, 0);
+  const leaderCandidateId = getLeadingCandidateId(eligible);
 
   return {
     enabled: true,
@@ -347,6 +415,7 @@ export async function fetchLeaderboardData() {
     isDemoData: false,
     hasTies,
     totalValidVotes,
+    leaderCandidateId,
     serverTimeIso: new Date().toISOString(),
     entries,
   };
@@ -595,11 +664,12 @@ export async function fetchAdminOverviewData(authToken: string) {
   });
   if (serverRes && serverRes.ok) return serverRes.data;
 
-  const cands = (await fetchSanityCandidates()) || getLocalCandidates();
-  const votesMap = computeCandidateVotesMap(cands);
-  const votes = getLocalVotes().map((v) => ({
+  const sanityData = await fetchSanityCandidatesAndVotes();
+  const cands = sanityData?.candidates || getLocalCandidates();
+  const votesMap = computeCandidateVotesMap(cands, sanityData?.votes || []);
+  const votes = (sanityData?.votes || getLocalVotes()).map((v) => ({
     ...v,
-    voterAnonymizedId: `voter_${v.voterId.slice(0, 8)}`,
+    voterAnonymizedId: `voter_${(v.voterId || 'anon').slice(0, 8)}`,
   }));
 
   return {

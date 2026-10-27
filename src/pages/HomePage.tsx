@@ -5,7 +5,11 @@ import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { Candidate, NewsArticle, INITIAL_CANDIDATES, INITIAL_NEWS } from '../data/initialData';
 import { CandidateCard } from '../components/CandidateCard';
-import { fetchCandidatesCatalog, fetchNewsList } from '../services/dataService';
+import {
+  fetchCandidatesCatalog,
+  fetchNewsList,
+  getLeadingCandidateId,
+} from '../services/dataService';
 
 const HERO_RUNWAY_VIDEO_URL =
   '/assets/aistudio/Model_walking_runway_and_logo_1080p_20261027101154_c968f22d.mp4';
@@ -21,6 +25,9 @@ interface CountdownParts {
 export const HomePage: React.FC = () => {
   const { t, locale, config, votingState, voteSuccessTrigger } = useApp();
   const [candidates, setCandidates] = useState<Candidate[]>(INITIAL_CANDIDATES);
+  const [leaderCandidateId, setLeaderCandidateId] = useState<string | null>(() =>
+    getLeadingCandidateId(INITIAL_CANDIDATES)
+  );
   const [showPublicVotes, setShowPublicVotes] = useState<boolean>(true);
   const [news, setNews] = useState<NewsArticle[]>(INITIAL_NEWS.slice(0, 3));
   const [countdown, setCountdown] = useState<CountdownParts>({
@@ -36,6 +43,9 @@ export const HomePage: React.FC = () => {
       .then((data) => {
         if (data?.candidates && data.candidates.length > 0) {
           setCandidates(data.candidates);
+          setLeaderCandidateId(
+            data.leaderCandidateId ?? getLeadingCandidateId(data.candidates)
+          );
         }
         if (typeof data?.showPublicVotes === 'boolean') {
           setShowPublicVotes(data.showPublicVotes);
@@ -325,6 +335,7 @@ export const HomePage: React.FC = () => {
               key={candidate.id}
               candidate={candidate}
               showPublicVotes={showPublicVotes}
+              isLeader={showPublicVotes && candidate.id === leaderCandidateId}
             />
           ))}
         </div>

@@ -4,7 +4,7 @@ import { Search, X, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Candidate, INITIAL_CANDIDATES } from '../data/initialData';
 import { CandidateCard } from '../components/CandidateCard';
-import { fetchCandidatesCatalog } from '../services/dataService';
+import { fetchCandidatesCatalog, getLeadingCandidateId } from '../services/dataService';
 
 export const CandidatesPage: React.FC = () => {
   const { t, config, voteSuccessTrigger } = useApp();
@@ -18,6 +18,9 @@ export const CandidatesPage: React.FC = () => {
   const [page, setPage] = useState(Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1));
 
   const [candidates, setCandidates] = useState<Candidate[]>(INITIAL_CANDIDATES);
+  const [leaderCandidateId, setLeaderCandidateId] = useState<string | null>(() =>
+    getLeadingCandidateId(INITIAL_CANDIDATES)
+  );
   const [regions, setRegions] = useState<string[]>(
     Array.from(new Set(INITIAL_CANDIDATES.map((c) => c.region))).sort()
   );
@@ -67,6 +70,11 @@ export const CandidatesPage: React.FC = () => {
       .then((data) => {
         if (!active) return;
         setCandidates(data.candidates || []);
+        setLeaderCandidateId(
+          data.leaderCandidateId !== undefined
+            ? data.leaderCandidateId
+            : getLeadingCandidateId(data.candidates || [])
+        );
         setTotalCount(data.totalCount ?? 0);
         setTotalPages(data.totalPages || 1);
         setRegions(data.regions || []);
@@ -242,6 +250,7 @@ export const CandidatesPage: React.FC = () => {
                 key={candidate.id}
                 candidate={candidate}
                 showPublicVotes={showPublicVotes}
+                isLeader={showPublicVotes && candidate.id === leaderCandidateId}
               />
             ))}
           </div>

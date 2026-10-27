@@ -174,7 +174,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     socialLinks: [],
     editionId: 'ed-20',
     status: 'eligible',
-    publicVotesCount: 0,
+    publicVotesCount: 1,
     isDemoData: false,
   },
   {

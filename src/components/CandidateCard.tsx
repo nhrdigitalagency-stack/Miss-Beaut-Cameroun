@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Candidate } from '../data/initialData';
 import { useApp } from '../context/AppContext';
@@ -7,9 +8,14 @@ import { useApp } from '../context/AppContext';
 interface CandidateCardProps {
   candidate: Candidate;
   showPublicVotes: boolean;
+  isLeader?: boolean;
 }
 
-export const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, showPublicVotes }) => {
+export const CandidateCard: React.FC<CandidateCardProps> = ({
+  candidate,
+  showPublicVotes,
+  isLeader = false,
+}) => {
   const { t, locale, votingState, openVoteModal } = useApp();
 
   const role = locale === 'en' ? candidate.roleEn : candidate.roleFr;
@@ -20,7 +26,11 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, showPub
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="group bg-white rounded-3xl border border-[#EEDDE6] overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-[0_12px_32px_rgb(168,13,85,0.08)]"
+      className={`group rounded-3xl overflow-hidden flex flex-col justify-between transition-all ${
+        isLeader
+          ? 'leader-lime-glow bg-[#FCFFE9]'
+          : 'bg-white border border-[#EEDDE6] hover:shadow-[0_12px_32px_rgb(168,13,85,0.08)]'
+      }`}
     >
       <div>
         {/* Portrait Container with Configurable Focal Point to never cut off faces */}
@@ -36,6 +46,20 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, showPub
             style={{ objectPosition: candidate.focalPoint || 'center 18%' }}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />
+
+          {/* Top Leader Badge when Candidate has the most votes */}
+          {isLeader && (
+            <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none z-10">
+              <span className="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-[#D6F542] text-[#21131D] text-xs font-bold shadow-[0_0_20px_rgba(214,245,66,0.95)] border border-[#21131D]/15">
+                <Sparkles className="w-3.5 h-3.5 text-[#21131D] shrink-0" />
+                <span>{locale === 'en' ? 'Leading in Votes' : 'En tête des votes'}</span>
+              </span>
+              <span className="py-1 px-2.5 rounded-full bg-[#21131D]/85 text-[#D6F542] text-xs font-bold tabular-nums border border-[#D6F542]/60">
+                #1
+              </span>
+            </div>
+          )}
+
           <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#21131D]/85 via-[#21131D]/35 to-transparent flex items-end p-4">
             <div className="text-white">
               <p className="text-xs font-medium text-[#D6F542] tabular-nums">
@@ -64,10 +88,18 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, showPub
           </p>
 
           {showPublicVotes && (
-            <p className="text-xs font-medium text-[#74636E] pt-1 tabular-nums">
-              Total public : <strong className="text-[#21131D]">{candidate.publicVotesCount}</strong>{' '}
-              {t.candidates.votesUnit}
-            </p>
+            <div
+              className={`pt-1 flex items-center justify-between text-xs font-medium tabular-nums ${
+                isLeader
+                  ? 'mt-2 py-2 px-3 rounded-xl bg-[#D6F542]/35 border border-[#D6F542] text-[#21131D]'
+                  : 'text-[#74636E]'
+              }`}
+            >
+              <span>Total public :</span>
+              <strong className="text-[#21131D] font-bold">
+                {candidate.publicVotesCount} {t.candidates.votesUnit}
+              </strong>
+            </div>
           )}
         </div>
       </div>
@@ -76,7 +108,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, showPub
       <div className="px-5 pb-5 pt-2 flex items-center gap-2.5">
         <Link
           to={`/candidates/${candidate.slug}`}
-          className="flex-1 py-2.5 px-4 rounded-full border border-[#EEDDE6] text-[#21131D] hover:bg-[#FFF8FB] text-xs sm:text-sm font-medium text-center transition-colors whitespace-nowrap shrink-0"
+          className="flex-1 py-2.5 px-4 rounded-full border border-[#EEDDE6] bg-white text-[#21131D] hover:bg-[#FFF8FB] text-xs sm:text-sm font-medium text-center transition-colors whitespace-nowrap shrink-0"
         >
           {t.candidates.viewProfile}
         </Link>
@@ -93,3 +125,4 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, showPub
     </motion.article>
   );
 };
+

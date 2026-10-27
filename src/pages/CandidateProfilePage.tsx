@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Share2, Check, ShieldCheck, QrCode, HeartHandshake } from 'lucide-react';
+import { ArrowLeft, Share2, Check, ShieldCheck, QrCode, HeartHandshake, Sparkles } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { Candidate, INITIAL_CANDIDATES } from '../data/initialData';
-import { fetchSingleCandidate } from '../services/dataService';
+import { fetchSingleCandidate, getLeadingCandidateId } from '../services/dataService';
 
 export const CandidateProfilePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -13,6 +13,9 @@ export const CandidateProfilePage: React.FC = () => {
 
   const [candidate, setCandidate] = useState<Candidate | null>(() =>
     INITIAL_CANDIDATES.find((c) => c.slug === slug || c.id === slug) || null
+  );
+  const [leaderCandidateId, setLeaderCandidateId] = useState<string | null>(() =>
+    getLeadingCandidateId(INITIAL_CANDIDATES)
   );
   const [showPublicVotes, setShowPublicVotes] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -27,6 +30,9 @@ export const CandidateProfilePage: React.FC = () => {
         if (data?.candidate) {
           setCandidate(data.candidate);
           setShowPublicVotes(Boolean(data.showPublicVotes));
+          if (data.leaderCandidateId !== undefined) {
+            setLeaderCandidateId(data.leaderCandidateId);
+          }
         }
         setLoading(false);
       })
@@ -89,6 +95,8 @@ export const CandidateProfilePage: React.FC = () => {
     }
   };
 
+  const isLeader = Boolean(showPublicVotes && candidate.id === leaderCandidateId);
+
   return (
     <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 space-y-10">
       {/* Breadcrumb Back Link */}
@@ -125,9 +133,13 @@ export const CandidateProfilePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="lg:col-span-5 bg-white rounded-3xl border border-[#EEDDE6] p-4 shadow-xs space-y-4"
+          className={`lg:col-span-5 rounded-3xl p-4 space-y-4 ${
+            isLeader
+              ? 'leader-lime-glow bg-[#FCFFE9]'
+              : 'bg-white border border-[#EEDDE6] shadow-xs'
+          }`}
         >
-          <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-[#21131D]/5">
+          <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#21131D]/5">
             <img
               src={candidate.photoUrl}
               alt={`${candidate.name} — Candidate n°0${candidate.number}`}
@@ -135,6 +147,17 @@ export const CandidateProfilePage: React.FC = () => {
               style={{ objectPosition: candidate.focalPoint || 'center 18%' }}
               className="w-full h-full object-cover"
             />
+            {isLeader && (
+              <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none z-10">
+                <span className="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-[#D6F542] text-[#21131D] text-xs font-bold shadow-[0_0_20px_rgba(214,245,66,0.95)] border border-[#21131D]/15">
+                  <Sparkles className="w-3.5 h-3.5 text-[#21131D] shrink-0" />
+                  <span>{locale === 'en' ? 'Leading in Votes' : 'En tête des votes'}</span>
+                </span>
+                <span className="py-1 px-2.5 rounded-full bg-[#21131D]/85 text-[#D6F542] text-xs font-bold tabular-nums border border-[#D6F542]/60">
+                  #1
+                </span>
+              </div>
+            )}
           </div>
           <div className="px-2 pb-1 flex items-center justify-between text-xs text-[#74636E]">
             <span>Portrait officiel</span>
@@ -150,7 +173,13 @@ export const CandidateProfilePage: React.FC = () => {
           className="lg:col-span-7 space-y-6"
         >
           {/* Identity Card */}
-          <div className="bg-white rounded-3xl border border-[#EEDDE6] p-6 sm:p-8 space-y-5">
+          <div
+            className={`rounded-3xl p-6 sm:p-8 space-y-5 ${
+              isLeader
+                ? 'leader-lime-glow bg-[#FCFFE9]'
+                : 'bg-white border border-[#EEDDE6]'
+            }`}
+          >
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#A80D55]">
                 <span className="tabular-nums">
@@ -164,6 +193,15 @@ export const CandidateProfilePage: React.FC = () => {
                 <span className="text-[#74636E] font-normal tabular-nums">
                   {candidate.age} {t.candidates.fictionalAgeNote}
                 </span>
+                {isLeader && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className="inline-flex items-center gap-1 py-0.5 px-2.5 rounded-full bg-[#D6F542] text-[#21131D] font-bold">
+                      <Sparkles className="w-3 h-3" />
+                      <span>1ʳᵉ place actuelle</span>
+                    </span>
+                  </>
+                )}
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-bold text-[#21131D] tracking-tight">
