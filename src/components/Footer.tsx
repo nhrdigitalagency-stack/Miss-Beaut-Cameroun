@@ -6,8 +6,8 @@ export const Footer: React.FC = () => {
   const { t, config, locale } = useApp();
 
   return (
-    <footer className="bg-[#780938] text-white mt-20 border-t border-[#A80D55]">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-14">
+    <footer className="w-full bg-[#780938] text-white border-t border-[#A80D55]">
+      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-14">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-white/15">
           {/* Column 1: Brand */}
           <div className="md:col-span-5 space-y-4">

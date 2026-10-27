@@ -67,7 +67,7 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-10 sm:py-14">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-10 sm:py-14">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Form Card */}
         <div className="lg:col-span-7 bg-white rounded-3xl border border-[#EEDDE6] p-6 sm:p-9 space-y-6 shadow-xs">
@@ -320,7 +320,7 @@ export const AccountPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 space-y-8">
       {/* Profile Header */}
       <div className="bg-white rounded-3xl border border-[#EEDDE6] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">

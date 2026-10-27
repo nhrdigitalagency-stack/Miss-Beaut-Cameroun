@@ -91,7 +91,7 @@ export const CandidatesPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-10 sm:py-14 space-y-10">
       {/* Page Title */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs font-semibold text-[#A80D55]">

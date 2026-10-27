@@ -9,7 +9,7 @@ export const ContestPage: React.FC = () => {
   const { config, t } = useApp();
 
   return (
-    <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 space-y-10">
       <div className="bg-white rounded-3xl border border-[#EEDDE6] p-7 sm:p-10 space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -76,7 +76,7 @@ export const RulesPage: React.FC = () => {
   const { config } = useApp();
 
   return (
-    <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 space-y-8">
       <div className="bg-white rounded-3xl border border-[#EEDDE6] p-7 sm:p-10 space-y-6">
         <div className="space-y-2 border-b border-[#EEDDE6] pb-6">
           <p className="text-xs font-semibold text-[#A80D55]">
@@ -163,7 +163,7 @@ export const NewsListPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 space-y-8">
       <div className="space-y-2">
         <p className="text-xs font-semibold text-[#A80D55]">Communiqués & Annonces</p>
         <h1 className="text-3xl sm:text-4xl font-bold text-[#21131D]">{t.nav.news}</h1>
@@ -243,7 +243,7 @@ export const NewsDetailPage: React.FC = () => {
   const content = locale === 'en' ? article.contentEn : article.contentFr;
 
   return (
-    <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 space-y-6">
       <Link
         to="/actualites"
         className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#74636E] hover:text-[#21131D]"
@@ -306,7 +306,7 @@ export const FaqPage: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 space-y-8">
       <div className="space-y-2">
         <p className="text-xs font-semibold text-[#A80D55]">Assistance & Transparence</p>
         <h1 className="text-3xl sm:text-4xl font-bold text-[#21131D]">
@@ -389,7 +389,7 @@ export const ContactPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 space-y-8">
       <div className="bg-white rounded-3xl border border-[#EEDDE6] p-7 sm:p-10 space-y-6">
         <div className="space-y-2">
           <p className="text-xs font-semibold text-[#A80D55]">{config.contestName}</p>

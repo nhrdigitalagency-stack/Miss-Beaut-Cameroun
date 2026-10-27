@@ -36,7 +36,7 @@ export const CandidateProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
+      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-12">
         <div className="h-[520px] rounded-3xl bg-white border border-[#EEDDE6] animate-pulse" />
       </div>
     );
@@ -44,7 +44,7 @@ export const CandidateProfilePage: React.FC = () => {
 
   if (!candidate) {
     return (
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-16 text-center space-y-4">
+      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-16 text-center space-y-4">
         <h1 className="text-2xl font-bold text-[#21131D]">Candidate introuvable</h1>
         <p className="text-sm text-[#74636E]">
           Ce profil n'existe pas ou a été retiré de l'édition en cours.
@@ -89,7 +89,7 @@ export const CandidateProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 space-y-10">
       {/* Breadcrumb Back Link */}
       <div className="flex items-center justify-between gap-4">
         <Link

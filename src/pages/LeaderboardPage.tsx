@@ -53,7 +53,7 @@ export const LeaderboardPage: React.FC = () => {
   }, [fetchLeaderboard, voteSuccessTrigger]);
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+    <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-10 sm:py-14 space-y-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-2">
